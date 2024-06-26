@@ -46,12 +46,14 @@ def cmd_send_command(command):
                                  encoding="cp866")
 
         output = process.stdout
-        output = "\n".join(output.split("\n")[3:-2]).strip()
+
+        if not output:
+            output = f"No output from command: '{command}'"
+
+        print(f"[cmd command]: {command} -> {output}")
         return output
 
     except Exception as e:
-        return str(e)
-
-
-if __name__ == '__main__':
-    print(cmd_send_command('ping 8.8.8.8'))
+        error_message = str(e)
+        print(f"[cmd command] ERROR: {command} -> {error_message}")
+        return error_message
