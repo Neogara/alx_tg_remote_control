@@ -65,7 +65,7 @@ def handle_remote_update_code_command(message):
     print(f"{prefix}Remote update code command received from {message.from_user.first_name} ({message.from_user.id})")
     git_update_output = os_utils.cmd_send_command('git pull')
     print(f"{prefix}Git update output: {git_update_output}")
-    if not git_update_output.startswith("Already up to date."):
+    if git_update_output.startswith("Already up to date."):
         tele_bot.send_message(message.chat.id, 'Already up-to-date.')
     else:
         tele_bot.send_message(message.chat.id, git_update_output)
