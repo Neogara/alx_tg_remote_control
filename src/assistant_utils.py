@@ -1,12 +1,12 @@
 import time
 
+import os
 import pygetwindow as gw
 from os_utils import kill_process_by_pid, find_process_by_name, run_program
 from PIL import ImageGrab
 
-assistant_process_name = "assistant.exe"
-assistant_program_path = r"C:\Program Files (x86)\Ассистент\assistant.exe"
-assistant_window_name = "Ассистент"
+from configs.assistant_config import assistant_process_name, assistant_program_path, assistant_window_name, \
+    use_assistant_pre_check
 
 
 def take_screenshot_assistant():
@@ -101,3 +101,7 @@ def check_assistant(message, tele_bot):
 
     for screenshot_item in screenshots:
         tele_bot.send_photo(message.chat.id, screenshot_item, caption=take_screenshot_message)
+
+
+if not os.path.exists(assistant_program_path) and use_assistant_pre_check:
+    assert False, f"File {assistant_program_path} not found"
