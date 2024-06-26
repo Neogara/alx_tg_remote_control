@@ -1,3 +1,6 @@
+import time
+from functools import wraps
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,6 +18,7 @@ import os_utils
 telegram_bot_token = os.getenv('telegram_bot_token')
 tele_bot = telebot.TeleBot(telegram_bot_token)
 auth_ids = [int(i) for i in os.getenv('auth_ids').strip("[], ").split(',')]
+MAX_MESSAGE_LENGTH = 4096
 
 
 def authorize(func):
@@ -49,12 +53,26 @@ def handle_get_screenshot(message):
     tele_bot.send_photo(message.chat.id, screenshot)
 
 
+def is_long_text(text):
+    return len(text) > MAX_MESSAGE_LENGTH
+
+
+def split_long_text(text):
+    return [text[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(text), MAX_MESSAGE_LENGTH)]
+
+
 @tele_bot.message_handler(commands=['cmd'])
 @authorize
 def handle_CMD_message(message):
     cmd_send_command = ' '.join(message.text.split()[1:])
     cmd_output = os_utils.cmd_send_command(cmd_send_command)
-    tele_bot.send_message(message.chat.id, cmd_output)
+    cmd_output.spli
+    if is_long_text(cmd_output):
+        for cmd_output_part in split_long_text(cmd_output):
+            time.sleep(0.2)
+            tele_bot.send_message(message.chat.id, cmd_output_part)
+    else:
+        tele_bot.send_message(message.chat.id, cmd_output)
 
 
 @tele_bot.message_handler(commands=['remote_update_code'])
