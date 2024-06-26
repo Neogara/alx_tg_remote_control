@@ -1,15 +1,13 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import datetime
 import os
 import sys
-
-import telebot.types
 from PIL import ImageGrab
-from dotenv import load_dotenv
-from telebot.types import ReplyKeyboardMarkup, \
-    KeyboardButton
-import psutil
-
-load_dotenv()
+import telebot.types
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 import assistant_utils
 import os_utils
