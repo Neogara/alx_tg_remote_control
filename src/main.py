@@ -54,6 +54,7 @@ def handle_get_screenshot(message):
 def handle_CMD_message(message):
     cmd_send_command = ' '.join(message.text.split()[1:])
     cmd_output = os_utils.cmd_send_command(cmd_send_command)
+    print(f"[cmd command]: {cmd_send_command} -> {cmd_output}")
     if not cmd_output:
         cmd_output = f"No output from command: '{cmd_send_command}'"
 
