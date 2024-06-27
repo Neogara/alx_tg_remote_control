@@ -16,6 +16,20 @@ def kill_process_by_pid(pid):
         return False, f"No permission to terminate process with PID {pid}."
 
 
+# not tested
+def kill_process_by_name(process_name):
+    try:
+        for process in psutil.process_iter(['pid', 'name']):
+            if process.info['name'] == process_name:
+                process.terminate()
+                return True, f"Process with name '{process_name}' has been terminated."
+
+    except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+        print(f"Error occurred while trying to find process by name: {e}")
+
+    return False, f"Process with name '{process_name}' not found."
+
+
 def find_process_by_name(process_name):
     try:
         for process in psutil.process_iter(['pid', 'name']):

@@ -13,6 +13,7 @@ import telebot.types
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 import assistant_utils
+from configs.assistant_config import AssistantInstances
 import os_utils
 
 telegram_bot_token = os.getenv('telegram_bot_token')
@@ -37,13 +38,29 @@ def authorize(func):
 @tele_bot.message_handler(commands=['check_assistant'])
 @authorize
 def handle_check_assistant(message):
-    assistant_utils.check_assistant(message, tele_bot)
+    select_assistant_name = ' '.join(message.text.split()[1:]).strip()
+    select_assistant_instance = AssistantInstances.get_assistant_instance_by_name(select_assistant_name)
+
+    if select_assistant_instance is None:
+        return_message = f"Assistant '{select_assistant_name}' not found."
+        tele_bot.send_message(message.chat.id, return_message)
+        return
+
+    assistant_utils.check_assistant(message, tele_bot, select_assistant_instance)
 
 
 @tele_bot.message_handler(commands=['reset_assistant'])
 @authorize
 def handle_reset_assistant(message):
-    assistant_utils.reset_assistant(message, tele_bot)
+    select_assistant_name = ' '.join(message.text.split()[1:]).strip()
+    select_assistant_instance = AssistantInstances.get_assistant_instance_by_name(select_assistant_name)
+
+    if select_assistant_instance is None:
+        return_message = f"Assistant '{select_assistant_name}' not found."
+        tele_bot.send_message(message.chat.id, return_message)
+        return
+
+    assistant_utils.reset_assistant(message, tele_bot, select_assistant_instance)
 
 
 @tele_bot.message_handler(commands=['get_screenshot'])
@@ -75,6 +92,13 @@ def handle_CMD_message(message):
         tele_bot.send_message(message.chat.id, cmd_output)
 
 
+@tele_bot.message_handler(commands=['restart_pc'])
+@authorize
+def handle_restart_pc(message):
+    os_utils.cmd_send_command('shutdown /r /t 0')
+    tele_bot.send_message(message.chat.id, 'Restarting PC.. wait 1 minute for restarting')
+
+
 @tele_bot.message_handler(commands=['remote_update_code'])
 def handle_remote_update_code_command(message):
     prefix = "[remote_update_code] "
@@ -90,15 +114,33 @@ def handle_remote_update_code_command(message):
         sys.exit(0)
 
 
+@tele_bot.message_handler(commands=['assistant_control'])
+@authorize
+def handle_assistant_control(message):
+    assistant_control_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+
+    assistant_names = AssistantInstances.get_names()
+    for assistant_name_item in assistant_names:
+        assistant_control_keyboard.add(KeyboardButton(f"/check_assistant {assistant_name_item}"))
+        assistant_control_keyboard.add(KeyboardButton(f"/reset_assistant {assistant_name_item}"))
+    assistant_control_keyboard.add("/start_page")
+    tele_bot.reply_to(message, 'Hello, ' + message.from_user.first_name, reply_markup=assistant_control_keyboard)
+
+
 @tele_bot.message_handler(commands=['start'])
 @authorize
 def handle_start(message):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton('/get_screenshot', ))
-    keyboard.add(KeyboardButton('/check_assistant'))
-    keyboard.add(KeyboardButton('/reset_assistant'))
-    keyboard.add(KeyboardButton('/remote_update_code'))
 
+    keyboard.add(KeyboardButton("/start"))
+    keyboard.add(KeyboardButton("/get_screenshot"))
+
+    keyboard.add(KeyboardButton("/assistant_control"))
+
+    keyboard.add(KeyboardButton("/cmd"))
+    keyboard.add(KeyboardButton("/restart_pc"))
+
+    keyboard.add(KeyboardButton("/remote_update_code"))
     tele_bot.reply_to(message, 'Hello, ' + message.from_user.first_name, reply_markup=keyboard)
 
 
@@ -118,11 +160,13 @@ if __name__ == '__main__':
     bot_commands = [
         telebot.types.BotCommand("/start", "Start"),
         telebot.types.BotCommand("/get_screenshot", "Get full size screenshot"),
-        telebot.types.BotCommand("/reset_assistant", "Reboot assistant"),
-        telebot.types.BotCommand("/check_assistant", "Get assistant program screenshot"),
-        telebot.types.BotCommand("/cmd", "Send CMD command /cmd [command]"),
-        telebot.types.BotCommand("/remote_update_code", "Remote update code"),
 
+        telebot.types.BotCommand("/assistant_control", "Assistant control menu"),
+
+        telebot.types.BotCommand("/cmd", "Send CMD command /cmd [command]"),
+        telebot.types.BotCommand("/restart_pc", "Restart PC with CMD. Wait 1 minute"),
+
+        telebot.types.BotCommand("/remote_update_code", "Remote update code"),
     ]
     tele_bot.set_my_commands(bot_commands)
 

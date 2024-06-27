@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Ассистент",
+    "program_path": "C:/Program Files (x86)/Ассистент/assistant.exe",
+    "window_name": "Ассистент",
+    "process_name": "assistant.exe",
+    "active": true
+  },
+  {
+    "name": "AnyDesk",
+    "program_path": "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/AnyDesk/AnyDesk.exe",
+    "window_name": "AnyDesk",
+    "process_name": "AnyDesk.exe",
+    "active": false
+  }
+]
